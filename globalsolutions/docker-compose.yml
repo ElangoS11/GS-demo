@@ -1,0 +1,38 @@
+name: my-gs-project
+
+services:
+  db:
+    image: postgres:17  
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456789
+    networks:
+      - backend
+
+  web:
+    build: .
+    command: ["gunicorn", "--bind", "0.0.0.0:8000", "globalsolutions.wsgi:application"]
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=123456789
+    depends_on:
+      - db
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
+    driver: bridge
